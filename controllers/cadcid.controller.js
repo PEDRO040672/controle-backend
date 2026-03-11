@@ -3,7 +3,7 @@ const pool = require('../db/pool');
 // GET /cadcid
 exports.listar = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM cadcid ORDER BY cid_id');
+    const result = await pool.query('SELECT * FROM cadcid ORDER BY cid_nome');
     res.json(result.rows);
   } catch (error) {
     console.error('ERRO REAL AO BUSCAR cadcid:', error);
