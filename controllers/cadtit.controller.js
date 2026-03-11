@@ -67,9 +67,7 @@ exports.criar = async (req, res) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    //res.status(500).json({ erro: 'Erro ao cadastrar Titular.' });
-    console.error('ERRO REAL AO INSERIR TITULAR:', error);
-    res.status(500).json({ erro: error.message });
+    res.status(500).json({ erro: 'Erro ao cadastrar Titular.' });
   }
 };
 

@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 
-const pessoasRoutes = require('./routes/pessoas.routes');
 const cadcidRoutes = require('./routes/cadcid.routes');
 const cadtitRoutes = require('./routes/cadtit.routes');
 
@@ -16,7 +15,6 @@ app.get('/', (req, res) => {
 });
 
 // rotas
-app.use('/pessoas', pessoasRoutes);
 app.use('/cadcid', cadcidRoutes);
 app.use('/cadtit', cadtitRoutes);
 
