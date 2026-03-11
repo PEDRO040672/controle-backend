@@ -3,7 +3,16 @@ const pool = require('../db/pool');
 // GET /cadtit
 exports.listar = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM cadtit ORDER BY tit_nome');
+    //const result = await pool.query('SELECT * FROM cadtit ORDER BY tit_nome');
+    const result = await pool.query(
+      `SELECT 
+        cadtit.*,
+        cadcid.cid_nome
+      FROM cadtit
+      LEFT JOIN cadcid 
+        ON cadcid.cid_id = cadtit.tit_cid
+      ORDER BY cadtit.tit_nome`
+    );
     res.json(result.rows);
   } catch (error) {
     console.error('ERRO REAL AO BUSCAR cadtit:', error);
@@ -16,7 +25,13 @@ exports.buscarPorTit_id = async (req, res) => {
   const { tit_id } = req.params;
   try {
     const result = await pool.query(
-      'SELECT * FROM cadtit WHERE tit_id = $1',
+      `SELECT 
+           cadtit.*,
+           cadcid.cid_nome
+        FROM cadtit
+        LEFT JOIN cadcid 
+          ON cadcid.cid_id = cadtit.tit_cid
+        WHERE cadtit.tit_id = $1`,
       [tit_id]
     );
     if (result.rowCount === 0) {
