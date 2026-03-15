@@ -81,7 +81,16 @@ exports.criar = async (req, res) => {
       ]
     );
     res.status(201).json(result.rows[0]);
+  //} catch (error) {
+  //  res.status(500).json({ erro: 'Erro ao cadastrar Titular.' });
+  //}
   } catch (error) {
+    if (error.code === '23503') {
+      if (error.constraint === 'fk_cadtit_cid') {
+        return res.status(400).json({ erro: 'Cidade inválida.' });
+      }
+    }
+    console.error(error);
     res.status(500).json({ erro: 'Erro ao cadastrar Titular.' });
   }
 };
@@ -129,7 +138,16 @@ exports.atualizar = async (req, res) => {
       return res.status(404).json({ erro: 'Titular não encontrado.' });
     }
     res.json(result.rows[0]);
+  //} catch (error) {
+  //  res.status(500).json({ erro: 'Erro ao atualizar Titular.' });
+  //}
   } catch (error) {
+    if (error.code === '23503') {
+      if (error.constraint === 'fk_cadtit_cid') {
+        return res.status(400).json({ erro: 'Cidade inválida.' });
+      }
+    }
+    console.error(error);
     res.status(500).json({ erro: 'Erro ao atualizar Titular.' });
   }
 };
