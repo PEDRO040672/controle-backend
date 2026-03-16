@@ -39,6 +39,7 @@ exports.buscarPorTit_id = async (req, res) => {
     }
     res.json(result.rows[0]);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ erro: 'Erro ao buscar Titular.' });
   }
 };
@@ -162,6 +163,7 @@ exports.remover = async (req, res) => {
       cadtit: result.rows[0],
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ erro: 'Erro ao remover Titular' });
   }
 };
