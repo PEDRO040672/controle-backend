@@ -56,6 +56,7 @@ exports.atualizar = async (req, res) => {
   if (!eqp_desc) {
     return res.status(400).json({ erro: 'Descrição do Equipamento é obrigatório.' });
   }
+
   try {
     const result = await pool.query(
       `UPDATE cadeqp
