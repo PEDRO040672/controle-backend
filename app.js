@@ -3,6 +3,7 @@ const cors = require('cors');
 
 const cadcidRoutes = require('./routes/cadcid.routes');
 const cadtitRoutes = require('./routes/cadtit.routes');
+const cadcidRoutes = require('./routes/cadeqp.routes');
 
 const app = express();
 
@@ -17,5 +18,6 @@ app.get('/', (req, res) => {
 // rotas
 app.use('/cadcid', cadcidRoutes);
 app.use('/cadtit', cadtitRoutes);
+app.use('/cadeqp', cadtitRoutes);
 
 module.exports = app;
