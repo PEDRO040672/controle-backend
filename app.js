@@ -6,6 +6,7 @@ const cadtitRoutes = require('./routes/cadtit.routes');
 const cadeqpRoutes = require('./routes/cadeqp.routes');
 const cadopeRoutes = require('./routes/cadope.routes');
 const cadhisRoutes = require('./routes/cadhis.routes');
+const cadosRoutes  = require('./routes/cados.routes');
 
 const app = express();
 
@@ -23,5 +24,6 @@ app.use('/cadtit', cadtitRoutes);
 app.use('/cadeqp', cadeqpRoutes);
 app.use('/cadope', cadopeRoutes);
 app.use('/cadhis', cadhisRoutes);
+app.use('/cados',  cadosRoutes);
 
 module.exports = app;
