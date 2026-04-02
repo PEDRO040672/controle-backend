@@ -108,6 +108,16 @@ exports.criar = async (req, res) => {
       RETURNING *`,
       [os_tr, os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots]
     );
+    
+    // atualiza HTKM do equipamento
+    await client.query(
+      `UPDATE cadeqp
+       SET eqp_htkm = $1
+       WHERE eqp_id = $2
+         AND eqp_htkm < $1`,
+      [os_htkmf, os_eqp]
+    );
+
     await client.query('COMMIT');
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -119,24 +129,64 @@ exports.criar = async (req, res) => {
   }
 };
 // PUT /cados/:os_tr
+//exports.atualizar = async (req, res) => {
+//  const { os_tr } = req.params;
+//  const { os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots } = req.body;
+//  try {
+//    const result = await pool.query(
+//      `UPDATE cados
+//       SET os_os = $2, os_situ = $3, os_data = $4, os_hora = $5, os_his = $6, os_cid = $7, os_tit = $8, os_eqp = $9, os_ope = $10, os_obs = $11, os_htkmi = $12, os_htkmf = $13, os_qtd = $14, os_vlunit = $15, os_vldesc = $16, os_vltots = $17
+//       WHERE os_tr = $1
+//       RETURNING *`,
+//      [os_tr, os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots]
+//    );
+//    if (result.rowCount === 0) {
+//      return res.status(404).json({ erro: 'OS não encontrada' });
+//    }
+//    res.json(result.rows[0]);
+//  } catch (error) {
+//    console.error(error);
+//    res.status(500).json({ erro: 'Erro ao atualizar OS.' });
+//  }
+//};
 exports.atualizar = async (req, res) => {
   const { os_tr } = req.params;
   const { os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots } = req.body;
+  const client = await pool.connect();
   try {
-    const result = await pool.query(
+    await client.query('BEGIN');
+    const result = await client.query(
       `UPDATE cados
-       SET os_os = $2, os_situ = $3, os_data = $4, os_hora = $5, os_his = $6, os_cid = $7, os_tit = $8, os_eqp = $9, os_ope = $10, os_obs = $11, os_htkmi = $12, os_htkmf = $13, os_qtd = $14, os_vlunit = $15, os_vldesc = $16, os_vltots = $17
+       SET os_os = $2, os_situ = $3, os_data = $4, os_hora = $5,
+           os_his = $6, os_cid = $7, os_tit = $8, os_eqp = $9,
+           os_ope = $10, os_obs = $11, os_htkmi = $12, os_htkmf = $13,
+           os_qtd = $14, os_vlunit = $15, os_vldesc = $16, os_vltots = $17
        WHERE os_tr = $1
        RETURNING *`,
       [os_tr, os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots]
     );
     if (result.rowCount === 0) {
+      await client.query('ROLLBACK');
       return res.status(404).json({ erro: 'OS não encontrada' });
     }
+
+    // atualiza HTKM do equipamento
+    await client.query(
+      `UPDATE cadeqp
+       SET eqp_htkm = $1
+       WHERE eqp_id = $2
+         AND eqp_htkm < $1`,
+      [os_htkmf, os_eqp]
+    );
+
+    await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error(error);
     res.status(500).json({ erro: 'Erro ao atualizar OS.' });
+  } finally {
+    client.release();
   }
 };
 
