@@ -1,5 +1,6 @@
 const pool = require('../db/pool');
 
+//========================================================================
 // GET /cados
 exports.listar = async (req, res) => {
   try {
@@ -32,6 +33,7 @@ exports.listar = async (req, res) => {
   }
 };
 
+//========================================================================
 // GET /cados/:os_tr
 exports.buscarPorOs_tr = async (req, res) => {
   const { os_tr } = req.params;
@@ -68,39 +70,30 @@ exports.buscarPorOs_tr = async (req, res) => {
   }
 };
 
+//========================================================================
 // POST /cados
-//exports.criar = async (req, res) => {
-//  //const { os_tr } = req.params;
-//  const { os_tr, os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots } = req.body;
-//  try {
-//    const result = await pool.query(
-//      `INSERT INTO cados (os_tr, os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots)
-//       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-//       RETURNING *`,
-//      [os_tr, os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots]
-//    );
-//    res.status(201).json(result.rows[0]);
-//  } catch (error) {
-//    console.error(error);
-//    res.status(500).json({ erro: 'Erro ao cadastrar OS.' });
-//  }
-//};
 exports.criar = async (req, res) => {
   const { os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots } = req.body;
+
   const client = await pool.connect();
+
   try {
     await client.query('BEGIN');
+
     // pega o valor atual
     const trResult = await client.query(
       'SELECT ds_tr FROM cadds ORDER BY ds_id DESC LIMIT 1 FOR UPDATE'
     );
+
     let os_tr = (trResult.rows[0]?.ds_tr || 0) + 1;
+
     // atualiza o contador
     await client.query(
       'UPDATE cadds SET ds_tr = $1 WHERE ds_id = (SELECT ds_id FROM cadds ORDER BY ds_id DESC LIMIT 1)',
       [os_tr]
     );
-    // faz o insert com o novo numero
+
+    // INSERT OS
     const result = await client.query(
       `INSERT INTO cados 
       (os_tr, os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots)
@@ -108,7 +101,7 @@ exports.criar = async (req, res) => {
       RETURNING *`,
       [os_tr, os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots]
     );
-    
+
     // atualiza HTKM do equipamento
     await client.query(
       `UPDATE cadeqp
@@ -118,8 +111,60 @@ exports.criar = async (req, res) => {
       [os_htkmf, os_eqp]
     );
 
+    // =======================================================
+    // SE SITUAÇÃO = FECHADO ou QUITADO -> INSERE CONTAS
+    // =======================================================
+    if (os_situ === "Fechado" || os_situ === "Quitado") {
+
+      // cadapr
+      await client.query(
+        `INSERT INTO cadapr
+        (apr_tr, apr_os, apr_tipo, apr_situ, apr_data, apr_tit, apr_eqp, apr_htkm, apr_obs, apr_vltot)
+        VALUES ($1,$2,'OS',$3,$4,$5,$6,$7,$8,$9)`,
+        [
+          os_tr,
+          os_os,
+          os_situ === "Quitado" ? "Quitado" : "Ñ Quitado",
+          os_data,
+          os_tit,
+          os_eqp,
+          os_htkmf,
+          os_obs,
+          os_vltots
+        ]
+      );
+
+      // cadipr
+      await client.query(
+        `INSERT INTO cadipr
+        (ipr_tr, ipr_it, ipr_his, ipr_obs, ipr_qtd, ipr_vlunit, ipr_vltoti)
+        VALUES ($1,1,$2,$3,$4,$5,$6)`,
+        [os_tr, os_his, os_obs, os_qtd, os_vlunit, os_vltots]
+      );
+
+      // cadppr
+      await client.query(
+        `INSERT INTO cadppr
+        (ppr_tr, ppr_pc, ppr_dtv, ppr_obs, ppr_vlpc)
+        VALUES ($1,1,$2,$3,$4)`,
+        [os_tr, os_data, os_obs, os_vltots]
+      );
+
+      // ===============================================
+      // SE QUITADO -> FAZ BAIXA
+      if (os_situ === "Quitado") {
+        await client.query(
+          `INSERT INTO cadbpr
+          (bpr_tr, bpr_pc, bpr_it, bpr_dtb, bpr_obs, bpr_vlb)
+          VALUES ($1,1,1,$2,$3,$4)`,
+          [os_tr, os_data, os_obs, os_vltots]
+        );
+      }
+    }
+
     await client.query('COMMIT');
     res.status(201).json(result.rows[0]);
+
   } catch (error) {
     await client.query('ROLLBACK');
     console.error(error);
@@ -128,27 +173,9 @@ exports.criar = async (req, res) => {
     client.release();
   }
 };
+
+//========================================================================
 // PUT /cados/:os_tr
-//exports.atualizar = async (req, res) => {
-//  const { os_tr } = req.params;
-//  const { os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots } = req.body;
-//  try {
-//    const result = await pool.query(
-//      `UPDATE cados
-//       SET os_os = $2, os_situ = $3, os_data = $4, os_hora = $5, os_his = $6, os_cid = $7, os_tit = $8, os_eqp = $9, os_ope = $10, os_obs = $11, os_htkmi = $12, os_htkmf = $13, os_qtd = $14, os_vlunit = $15, os_vldesc = $16, os_vltots = $17
-//       WHERE os_tr = $1
-//       RETURNING *`,
-//      [os_tr, os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots]
-//    );
-//    if (result.rowCount === 0) {
-//      return res.status(404).json({ erro: 'OS não encontrada' });
-//    }
-//    res.json(result.rows[0]);
-//  } catch (error) {
-//    console.error(error);
-//    res.status(500).json({ erro: 'Erro ao atualizar OS.' });
-//  }
-//};
 exports.atualizar = async (req, res) => {
   const { os_tr } = req.params;
   const { os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots } = req.body;
@@ -169,7 +196,6 @@ exports.atualizar = async (req, res) => {
       await client.query('ROLLBACK');
       return res.status(404).json({ erro: 'OS não encontrada' });
     }
-
     // atualiza HTKM do equipamento
     await client.query(
       `UPDATE cadeqp
@@ -178,7 +204,6 @@ exports.atualizar = async (req, res) => {
          AND eqp_htkm < $1`,
       [os_htkmf, os_eqp]
     );
-
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (error) {
@@ -190,6 +215,7 @@ exports.atualizar = async (req, res) => {
   }
 };
 
+//========================================================================
 // DELETE /cados/:os_tr
 exports.remover = async (req, res) => {
   const { os_tr } = req.params;
