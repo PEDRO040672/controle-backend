@@ -208,10 +208,7 @@ exports.atualizar = async (req, res) => {
     // =======================================================
     // SE ERA ABERTO E AGORA FECHADO OU QUITADO
     // =======================================================
-    if (
-      oldSitu === "Aberto" &&
-      (os_situ === "Fechado" || os_situ === "Quitado")
-    ) {
+    if (oldSitu === "Aberto" && (os_situ === "Fechado" || os_situ === "Quitado")) {
       // cadapr
       await client.query(
         `INSERT INTO cadapr
@@ -253,6 +250,59 @@ exports.atualizar = async (req, res) => {
         );
       }
     }
+    // =======================================================
+    // ERA FECHADO -> QUITADO (somente baixa)
+    // =======================================================
+    if (oldSitu === "Fechado" && os_situ === "Quitado") {
+      await client.query(
+        `INSERT INTO cadbpr
+        (bpr_tr, bpr_pc, bpr_it, bpr_dtb, bpr_obs, bpr_vlb)
+        VALUES ($1,1,1,$2,$3,$4)`,
+        [os_tr, os_data, os_obs, os_vltots]
+      );
+      // opcional mas recomendado: atualizar situação do financeiro
+      await client.query(
+        `UPDATE cadapr
+         SET apr_situ = 'Quitado'
+         WHERE apr_tr = $1`,
+        [os_tr]
+      );
+    } 
+
+    // =======================================================
+    // ERA QUITADO -> FECHADO (remove apenas baixa)
+    // =======================================================
+    if (oldSitu === "Quitado" && os_situ === "Fechado") {
+      await client.query(
+        `DELETE FROM cadbpr
+         WHERE bpr_tr = $1`,
+        [os_tr]
+      );
+      await client.query(
+        `UPDATE cadapr
+         SET apr_situ = 'Ñ Quitado'
+         WHERE apr_tr = $1`,
+        [os_tr]
+      );
+    }
+    // =======================================================
+    // ERA QUITADO -> ABERTO (remove tudo)
+    // =======================================================
+    if (oldSitu === "Quitado" && os_situ === "Aberto") {
+      await client.query(`DELETE FROM cadbpr WHERE bpr_tr = $1`, [os_tr]);
+      await client.query(`DELETE FROM cadppr WHERE ppr_tr = $1`, [os_tr]);
+      await client.query(`DELETE FROM cadipr WHERE ipr_tr = $1`, [os_tr]);
+      await client.query(`DELETE FROM cadapr WHERE apr_tr = $1`, [os_tr]);
+    }
+    // =======================================================
+    // ERA FECHADO -> ABERTO (remove financeiro)
+    // =======================================================
+    if (oldSitu === "Fechado" && os_situ === "Aberto") {
+      await client.query(`DELETE FROM cadppr WHERE ppr_tr = $1`, [os_tr]);
+      await client.query(`DELETE FROM cadipr WHERE ipr_tr = $1`, [os_tr]);
+      await client.query(`DELETE FROM cadapr WHERE apr_tr = $1`, [os_tr]);
+    }
+
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (error) {
