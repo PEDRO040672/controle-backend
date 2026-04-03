@@ -15,7 +15,7 @@ async function atualizarHTKM(client, os_eqp, os_htkmf) {
 
 async function inserirFinanceiro(client, dados) {
   const {
-    os_tr, os_os, os_situ, os_data,
+    os_tr, os_situ, os_data,
     os_tit, os_eqp, os_htkmf,
     os_obs, os_vltots,
     os_his, os_qtd, os_vlunit
@@ -26,7 +26,6 @@ async function inserirFinanceiro(client, dados) {
     VALUES ($1,$2,'OS',$3,$4,$5,$6,$7,$8,$9)`,
     [
       os_tr,
-      os_os,
       os_situ === "Quitado" ? "Quitado" : "Ñ Quitado",
       os_data,
       os_tit,
@@ -159,13 +158,13 @@ exports.criar = async (req, res) => {
     );
     const result = await client.query(
       `INSERT INTO cados 
-      (os_tr, os_os, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope,
+      (os_tr, os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope,
        os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
       RETURNING *`,
       [
         os_tr,
-        dados.os_os, dados.os_situ, dados.os_data, dados.os_hora,
+        dados.os_situ, dados.os_data, dados.os_hora,
         dados.os_his, dados.os_cid, dados.os_tit, dados.os_eqp,
         dados.os_ope, dados.os_obs, dados.os_htkmi, dados.os_htkmf,
         dados.os_qtd, dados.os_vlunit, dados.os_vldesc, dados.os_vltots
@@ -208,15 +207,15 @@ exports.atualizar = async (req, res) => {
     const oldSitu = old.rows[0].os_situ;
     const result = await client.query(
       `UPDATE cados SET
-       os_os=$2, os_situ=$3, os_data=$4, os_hora=$5,
-       os_his=$6, os_cid=$7, os_tit=$8, os_eqp=$9,
-       os_ope=$10, os_obs=$11, os_htkmi=$12, os_htkmf=$13,
-       os_qtd=$14, os_vlunit=$15, os_vldesc=$16, os_vltots=$17
+       os_situ=$2, os_data=$3, os_hora=$4,
+       os_his=$5, os_cid=$6, os_tit=$7, os_eqp=$8,
+       os_ope=$9, os_obs=$10, os_htkmi=$11, os_htkmf=$12,
+       os_qtd=$13, os_vlunit=$14, os_vldesc=$15, os_vltots=$16
        WHERE os_tr=$1
        RETURNING *`,
       [
         os_tr,
-        dados.os_os, dados.os_situ, dados.os_data, dados.os_hora,
+        dados.os_situ, dados.os_data, dados.os_hora,
         dados.os_his, dados.os_cid, dados.os_tit, dados.os_eqp,
         dados.os_ope, dados.os_obs, dados.os_htkmi, dados.os_htkmf,
         dados.os_qtd, dados.os_vlunit, dados.os_vldesc, dados.os_vltots
