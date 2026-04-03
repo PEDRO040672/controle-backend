@@ -22,8 +22,8 @@ async function inserirFinanceiro(client, dados) {
   } = dados;
   await client.query(
     `INSERT INTO cadapr
-    (apr_tr, apr_os, apr_tipo, apr_situ, apr_data, apr_tit, apr_eqp, apr_htkm, apr_obs, apr_vltot)
-    VALUES ($1,$2,'OS',$3,$4,$5,$6,$7,$8,$9)`,
+    (apr_tr, apr_tipo, apr_situ, apr_data, apr_tit, apr_eqp, apr_htkm, apr_obs, apr_vltot)
+    VALUES ($1,'OS',$2,$3,$4,$5,$6,$7,$8)`,
     [
       os_tr,
       os_situ === "Quitado" ? "Quitado" : "Ñ Quitado",
