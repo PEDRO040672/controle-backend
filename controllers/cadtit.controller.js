@@ -105,8 +105,8 @@ exports.atualizar = async (req, res) => {
           tit_cid, 
           tit_obs 
         } = req.body;
-  if (!tit_nome || !tit_fone) {
-    return res.status(400).json({ erro: 'Nome e Fone são obrigatórios' });
+  if (!tit_nome) {
+    return res.status(400).json({ erro: 'Nome é obrigatório.' });
   }
   try {
     const result = await pool.query(
