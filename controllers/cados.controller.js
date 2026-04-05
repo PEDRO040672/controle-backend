@@ -127,25 +127,25 @@ exports.criar = async (req, res) => {
       // cadipr
       await client.query(
         `INSERT INTO cadipr
-        (ipr_tr, ipr_it, ipr_his, ipr_obs, ipr_qtd, ipr_vlunit, ipr_vltoti)
-        VALUES ($1,1,$2,$3,$4,$5,$6)`,
-        [os_tr, os_his, os_obs, os_qtd, os_vlunit, os_vltots]
+        (ipr_tr, ipr_it, ipr_his, ipr_qtd, ipr_vlunit, ipr_vltoti)
+        VALUES ($1,1,$2,$3,$4,$5)`,
+        [os_tr, os_his, os_qtd, os_vlunit, os_vltots]
       );
       // cadppr
       await client.query(
         `INSERT INTO cadppr
-        (ppr_tr, ppr_pc, ppr_dtv, ppr_obs, ppr_vlpc)
-        VALUES ($1,1,$2,$3,$4)`,
-        [os_tr, os_data, os_obs, os_vltots]
+        (ppr_tr, ppr_pc, ppr_dtv, ppr_vlpc)
+        VALUES ($1,1,$2,$3)`,
+        [os_tr, os_data, os_vltots]
       );
       // ===============================================
       // SE QUITADO -> FAZ BAIXA
       if (os_situ === "Quitado") {
         await client.query(
           `INSERT INTO cadbpr
-          (bpr_tr, bpr_pc, bpr_it, bpr_dtb, bpr_obs, bpr_vlb)
-          VALUES ($1,1,1,$2,$3,$4)`,
-          [os_tr, os_data, os_obs, os_vltots]
+          (bpr_tr, bpr_pc, bpr_it, bpr_dtb, bpr_vlb)
+          VALUES ($1,1,1,$2,$3)`,
+          [os_tr, os_data, os_vltots]
         );
       }
     }
@@ -228,24 +228,24 @@ exports.atualizar = async (req, res) => {
       // cadipr
       await client.query(
         `INSERT INTO cadipr
-        (ipr_tr, ipr_it, ipr_his, ipr_obs, ipr_qtd, ipr_vlunit, ipr_vltoti)
-        VALUES ($1,1,$2,$3,$4,$5,$6)`,
-        [os_tr, os_his, os_obs, os_qtd, os_vlunit, os_vltots]
+        (ipr_tr, ipr_it, ipr_his, ipr_qtd, ipr_vlunit, ipr_vltoti)
+        VALUES ($1,1,$2,$3,$4,$5)`,
+        [os_tr, os_his, os_qtd, os_vlunit, os_vltots]
       );
       // cadppr
       await client.query(
         `INSERT INTO cadppr
-        (ppr_tr, ppr_pc, ppr_dtv, ppr_obs, ppr_vlpc)
-        VALUES ($1,1,$2,$3,$4)`,
-        [os_tr, os_data, os_obs, os_vltots]
+        (ppr_tr, ppr_pc, ppr_dtv, ppr_vlpc)
+        VALUES ($1,1,$2,$3)`,
+        [os_tr, os_data, os_vltots]
       );
       // se quitado -> baixa
       if (os_situ === "Quitado") {
         await client.query(
           `INSERT INTO cadbpr
-          (bpr_tr, bpr_pc, bpr_it, bpr_dtb, bpr_obs, bpr_vlb)
-          VALUES ($1,1,1,$2,$3,$4)`,
-          [os_tr, os_data, os_obs, os_vltots]
+          (bpr_tr, bpr_pc, bpr_it, bpr_dtb, bpr_vlb)
+          VALUES ($1,1,1,$2,$3)`,
+          [os_tr, os_data, os_vltots]
         );
       }
     }
@@ -255,9 +255,9 @@ exports.atualizar = async (req, res) => {
     if (oldSitu === "Fechado" && os_situ === "Quitado") {
       await client.query(
         `INSERT INTO cadbpr
-        (bpr_tr, bpr_pc, bpr_it, bpr_dtb, bpr_obs, bpr_vlb)
-        VALUES ($1,1,1,$2,$3,$4)`,
-        [os_tr, os_data, os_obs, os_vltots]
+        (bpr_tr, bpr_pc, bpr_it, bpr_dtb, bpr_vlb)
+        VALUES ($1,1,1,$2,$3)`,
+        [os_tr, os_data, os_vltots]
       );
       // opcional mas recomendado: atualizar situação do financeiro
       await client.query(
