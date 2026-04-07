@@ -14,7 +14,7 @@ exports.listar = async (req, res) => {
         ON cadtit.tit_id = cadapr.apr_tit
       LEFT JOIN cadeqp 
         ON cadeqp.eqp_id = cadapr.apr_eqp
-      ORDER BY cadapr.apr_data DESC`
+      ORDER BY cadapr.apr_data, cadapr.apr_tr DESC`
     );
 
     res.json(result.rows);

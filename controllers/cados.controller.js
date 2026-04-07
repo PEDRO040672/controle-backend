@@ -25,7 +25,7 @@ exports.listar = async (req, res) => {
         ON cadeqp.eqp_id = cados.os_eqp
       LEFT JOIN cadope 
         ON cadope.ope_id = cados.os_ope
-      ORDER BY cados.os_data DESC`
+      ORDER BY cados.os_data, cados.os_tr DESC`
     );
     res.json(result.rows);
   } catch (error) {
