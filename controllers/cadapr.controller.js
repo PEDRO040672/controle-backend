@@ -88,7 +88,7 @@ exports.criar = async (req, res) => {
     cabecalho,
     itens,
     parcelas,
-    quitar_total
+    //quitar_total
   } = req.body;
 
   const client = await pool.connect();
@@ -174,7 +174,8 @@ exports.criar = async (req, res) => {
     }
 
     // QUITAR TOTAL
-    if (quitar_total) {
+    //if (quitar_total) {
+    if (cabecalho.apr_situ == "Quitado") {
       for (let i = 0; i < parcelas.length; i++) {
         const pc = parcelas[i];
 
@@ -211,7 +212,12 @@ exports.criar = async (req, res) => {
 exports.atualizar = async (req, res) => {
 
   const { apr_tr } = req.params;
-  const { cabecalho, itens, parcelas, quitar_total } = req.body;
+  const {
+    cabecalho,
+    itens,
+    parcelas,
+    //quitar_total
+  } = req.body;
 
   const client = await pool.connect();
 
@@ -283,7 +289,8 @@ exports.atualizar = async (req, res) => {
     }
 
     // QUITAR TOTAL
-    if (quitar_total) {
+    //if (quitar_total) {
+    if (cabecalho.apr_situ == "Quitado") {
       for (let i = 0; i < parcelas.length; i++) {
         const pc = parcelas[i];
 
