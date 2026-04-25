@@ -81,7 +81,7 @@ exports.buscarPorApr_tr = async (req, res) => {
 };
 
 //========================================================================
-// POST /cadapr
+// POST / INCLUSÃO /cadapr
 exports.criar = async (req, res) => {
 
   const {
@@ -162,11 +162,12 @@ exports.criar = async (req, res) => {
 
       await client.query(
         `INSERT INTO cadppr
-        (ppr_tr, ppr_pc, ppr_dtv, ppr_vlpc)
-        VALUES ($1,$2,$3,$4)`,
+        (ppr_tr, ppr_pc, ppr_situ, ppr_dtv, ppr_vlpc)
+        VALUES ($1,$2,$3,$4,$5)`,
         [
           apr_tr,
           i + 1,
+          cabecalho.apr_situ,
           pc.ppr_dtv,
           pc.ppr_vlpc
         ]
@@ -174,11 +175,9 @@ exports.criar = async (req, res) => {
     }
 
     // QUITAR TOTAL
-    //if (quitar_total) {
     if (cabecalho.apr_situ == "Quitado") {
       for (let i = 0; i < parcelas.length; i++) {
         const pc = parcelas[i];
-
         await client.query(
           `INSERT INTO cadbpr
           (bpr_tr, bpr_pc, bpr_it, bpr_dtb, bpr_vlb)
@@ -195,9 +194,7 @@ exports.criar = async (req, res) => {
     }
 
     await client.query('COMMIT');
-
     res.status(201).json({ apr_tr });
-
   } catch (error) {
     await client.query('ROLLBACK');
     console.error(error);
@@ -208,7 +205,7 @@ exports.criar = async (req, res) => {
 };
 
 //========================================================================
-// PUT /cadapr/:apr_tr
+// PUT / ALTERAÇÃO /cadapr/:apr_tr
 exports.atualizar = async (req, res) => {
 
   const { apr_tr } = req.params;
@@ -277,11 +274,12 @@ exports.atualizar = async (req, res) => {
 
       await client.query(
         `INSERT INTO cadppr
-        (ppr_tr, ppr_pc, ppr_dtv, ppr_vlpc)
-        VALUES ($1,$2,$3,$4)`,
+        (ppr_tr, ppr_pc, ppr_situ, ppr_dtv, ppr_vlpc)
+        VALUES ($1,$2,$3,$4,$5)`,
         [
           apr_tr,
           i + 1,
+          cabecalho.apr_situ,
           pc.ppr_dtv,
           pc.ppr_vlpc
         ]
@@ -289,11 +287,9 @@ exports.atualizar = async (req, res) => {
     }
 
     // QUITAR TOTAL
-    //if (quitar_total) {
     if (cabecalho.apr_situ == "Quitado") {
       for (let i = 0; i < parcelas.length; i++) {
         const pc = parcelas[i];
-
         await client.query(
           `INSERT INTO cadbpr
           (bpr_tr, bpr_pc, bpr_it, bpr_dtb, bpr_vlb)
@@ -310,9 +306,7 @@ exports.atualizar = async (req, res) => {
     }
 
     await client.query('COMMIT');
-
     res.json({ mensagem: 'Atualizado com sucesso' });
-
   } catch (error) {
     await client.query('ROLLBACK');
     console.error(error);
