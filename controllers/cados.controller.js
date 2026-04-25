@@ -72,7 +72,7 @@ exports.buscarPorOs_tr = async (req, res) => {
 };
 
 //========================================================================
-// POST /cados
+// POST / INCLUSÃO /cados
 exports.criar = async (req, res) => {
   const {os_situ, os_data, os_hora, os_his, os_cid, os_tit, os_eqp, os_ope, os_obs, os_htkmi, os_htkmf, os_qtd, os_vlunit, os_vldesc, os_vltots } = req.body;
   const client = await pool.connect();
@@ -134,9 +134,12 @@ exports.criar = async (req, res) => {
       // cadppr
       await client.query(
         `INSERT INTO cadppr
-        (ppr_tr, ppr_pc, ppr_dtv, ppr_vlpc)
-        VALUES ($1,1,$2,$3)`,
-        [os_tr, os_data, os_vltots]
+        (ppr_tr, ppr_pc, ppr_situ, ppr_dtv, ppr_vlpc)
+        VALUES ($1,1,$2,$3,$4)`,
+        [os_tr, 
+         os_situ === "Quitado" ? "Quitado" : "Ñ Quitado",
+         os_data, 
+         os_vltots]
       );
       // ===============================================
       // SE QUITADO -> FAZ BAIXA
@@ -161,7 +164,7 @@ exports.criar = async (req, res) => {
 };
 
 //========================================================================
-// PUT /cados/:os_tr
+// PUT / ALTERAÇÃO /cados/:os_tr
 exports.atualizar = async (req, res) => {
   const { os_tr } = req.params;
   const {
@@ -235,9 +238,12 @@ exports.atualizar = async (req, res) => {
       // cadppr
       await client.query(
         `INSERT INTO cadppr
-        (ppr_tr, ppr_pc, ppr_dtv, ppr_vlpc)
-        VALUES ($1,1,$2,$3)`,
-        [os_tr, os_data, os_vltots]
+        (ppr_tr, ppr_pc, ppr_situ, ppr_dtv, ppr_vlpc)
+        VALUES ($1,1,$2,$3,$4)`,
+        [os_tr, 
+         os_situ === "Quitado" ? "Quitado" : "Ñ Quitado",
+         os_data, 
+         os_vltots]
       );
       // se quitado -> baixa
       if (os_situ === "Quitado") {
@@ -259,11 +265,17 @@ exports.atualizar = async (req, res) => {
         VALUES ($1,1,1,$2,$3)`,
         [os_tr, os_data, os_vltots]
       );
-      // opcional mas recomendado: atualizar situação do financeiro
+      // atualizar situação do financeiro
       await client.query(
         `UPDATE cadapr
          SET apr_situ = 'Quitado'
          WHERE apr_tr = $1`,
+        [os_tr]
+      );
+      await client.query(
+        `UPDATE cadppr
+         SET ppr_situ = 'Quitado'
+         WHERE ppr_tr = $1`,
         [os_tr]
       );
     } 
@@ -277,10 +289,17 @@ exports.atualizar = async (req, res) => {
          WHERE bpr_tr = $1`,
         [os_tr]
       );
+      // atualizar situação do financeiro
       await client.query(
         `UPDATE cadapr
          SET apr_situ = 'Ñ Quitado'
          WHERE apr_tr = $1`,
+        [os_tr]
+      );
+      await client.query(
+        `UPDATE cadppr
+         SET ppr_situ = 'Ñ Quitado'
+         WHERE ppr_tr = $1`,
         [os_tr]
       );
     }
