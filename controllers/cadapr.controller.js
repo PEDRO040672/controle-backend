@@ -88,7 +88,6 @@ exports.criar = async (req, res) => {
     cabecalho,
     itens,
     parcelas,
-    //quitar_total
   } = req.body;
 
   const client = await pool.connect();
@@ -213,7 +212,6 @@ exports.atualizar = async (req, res) => {
     cabecalho,
     itens,
     parcelas,
-    //quitar_total
   } = req.body;
 
   const client = await pool.connect();
